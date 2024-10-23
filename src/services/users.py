@@ -2,7 +2,7 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import select
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import DatabaseError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from config.settings import settings
 from models.users import User
@@ -16,19 +16,21 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 
-async def create_user(user: CreateUser, db: AsyncSession):
+async def create_user(user: CreateUser, db: AsyncSession, is_admin=False):
     """
     Создает пользователя, хеширует пароль, сохраняет в БД и возвращает пользователя.
     """
-    user_dump = user.model_dump(exclude="password")
-    user_dump["password"] = get_password_hash(user.password)
+    user_dump = user.model_dump(exclude=("password1", "password2"))
+    user_dump["password"] = get_password_hash(user.password1)
     new_user = User(**user_dump)
+    if is_admin:
+        new_user.is_admin = True
 
     try:
         db.add(new_user)
         await db.commit()
     except IntegrityError:
-        raise HTTPException(status_code=409, detail="Пользователь с таким email уже существует.")
+        raise HTTPException(status_code=409, detail="Пользователь с таким email или телефоном уже существует.")
 
     await db.refresh(new_user)
     return UserRead.model_validate(new_user)

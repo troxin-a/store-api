@@ -4,8 +4,6 @@ from api.base import base_router
 from api.product import product_router
 from models.cart_product import CartProduct
 from models.cart import Cart
-from models.product import Product
-from schemas.users import UserRead
 
 
 app = FastAPI()

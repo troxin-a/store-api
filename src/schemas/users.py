@@ -1,5 +1,6 @@
 import re
-from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
+from typing_extensions import Self
+from pydantic import BaseModel, ConfigDict, EmailStr, field_validator, model_validator
 
 
 class UserBase(BaseModel):
@@ -18,10 +19,10 @@ class UserBase(BaseModel):
 
 
 class CreateUser(UserBase):
-    password: str
-    # confirm_password: str
+    password1: str
+    password2: str
 
-    @field_validator("password")
+    @field_validator("password1")
     @classmethod
     def validate_password(cls, v):
         pattern = r"^(?=.*[A-Z])(?=.*\d)(?=.*[$%&!:])(?=.{8,})[A-Za-z\d$%&!:]*$"
@@ -30,6 +31,14 @@ class CreateUser(UserBase):
                 """Пароль должен быть не менее 8 символов, только латиница, минимум 1 цифра, минимум 1 символ верхнего регистра, минимум 1 спец символ ($%&!:)."""
             )
         return v
+
+    @model_validator(mode="after")
+    def check_passwords_match(self) -> Self:
+        pw1 = self.password1
+        pw2 = self.password2
+        if pw1 is not None and pw2 is not None and pw1 != pw2:
+            raise ValueError("Пароли не совпадают.")
+        return self
 
 
 class UserRead(UserBase):
