@@ -1,6 +1,6 @@
 import re
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
+from sqlalchemy.orm import DeclarativeBase, declared_attr
 
 from config.settings import settings
 

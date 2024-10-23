@@ -2,7 +2,7 @@ import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy import select
-from sqlalchemy.exc import DatabaseError, IntegrityError
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from config.settings import settings
 from models.users import User
@@ -10,6 +10,8 @@ from schemas.users import CreateUser, UserRead, TokenData
 from datetime import datetime, timedelta, timezone
 from config.db import get_db
 from passlib.context import CryptContext
+
+from services.cart import create_cart
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -33,6 +35,8 @@ async def create_user(user: CreateUser, db: AsyncSession, is_admin=False):
         raise HTTPException(status_code=409, detail="Пользователь с таким email или телефоном уже существует.")
 
     await db.refresh(new_user)
+    await create_cart(new_user, db)
+
     return UserRead.model_validate(new_user)
 
 
