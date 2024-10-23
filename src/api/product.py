@@ -2,10 +2,10 @@ from typing import List
 from fastapi import Depends
 from fastapi.routing import APIRouter
 from config.db import get_db
+from models.users import User
 from schemas.product import ProductBase, ProductRead
-from schemas.users import UserRead
 from services.product import product_create, product_delete, product_list, product_read, product_update
-from services.users import get_current_active_user
+from services.users import get_current_active_user, is_admin
 
 product_router = APIRouter(prefix="/product", tags=["Product"])
 
@@ -13,10 +13,10 @@ product_router = APIRouter(prefix="/product", tags=["Product"])
 @product_router.post(
     "/",
     summary="Новый товар",
+    dependencies=[Depends(is_admin)],
 )
 async def create_product(
     product: ProductBase,
-    user: UserRead = Depends(get_current_active_user),
     db=Depends(get_db),
 ) -> ProductRead:
     return await product_create(product, db)
@@ -25,11 +25,11 @@ async def create_product(
 @product_router.put(
     "/{product_id}",
     summary="Редактировать товар",
+    dependencies=[Depends(is_admin)],
 )
 async def update_product(
     product_id: int,
     product: ProductBase,
-    user: UserRead = Depends(get_current_active_user),
     db=Depends(get_db),
 ) -> ProductRead:
     return await product_update(product_id, product, db)
@@ -41,10 +41,10 @@ async def update_product(
 )
 async def retrieve_product(
     product_id: int,
-    user: UserRead = Depends(get_current_active_user),
+    user: User = Depends(get_current_active_user),
     db=Depends(get_db),
 ) -> ProductRead:
-    return await product_read(product_id, db)
+    return await product_read(user, product_id, db)
 
 
 @product_router.get(
@@ -52,19 +52,19 @@ async def retrieve_product(
     summary="Список товаров",
 )
 async def list_product(
-    user: UserRead = Depends(get_current_active_user),
+    user: User = Depends(get_current_active_user),
     db=Depends(get_db),
 ) -> List[ProductRead]:
-    return await product_list(db)
+    return await product_list(user, db)
 
 
 @product_router.delete(
     "/{product_id}",
     summary="Удалить товар",
+    dependencies=[Depends(is_admin)],
 )
 async def delete_product(
     product_id: int,
-    user: UserRead = Depends(get_current_active_user),
     db=Depends(get_db),
 ):
     return await product_delete(product_id, db)
