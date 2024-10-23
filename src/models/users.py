@@ -17,4 +17,4 @@ class User(Base):
     is_active: Mapped[bool] = mapped_column(default=True, server_default=text("'false'"))
     is_admin: Mapped[bool] = mapped_column(default=False, server_default=text("'false'"))
 
-    cart: Mapped["Cart"] = relationship(uselist=False, back_populates="user")#, lazy="joined")
+    cart: Mapped["Cart"] = relationship(uselist=False, back_populates="user")  # , lazy="joined")

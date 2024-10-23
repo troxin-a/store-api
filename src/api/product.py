@@ -4,22 +4,16 @@ from fastapi.routing import APIRouter
 from config.db import get_db
 from schemas.product import ProductBase, ProductRead
 from schemas.users import UserRead
-from services.product import product_create, product_list
+from services.product import product_create, product_delete, product_list, product_read, product_update
 from services.users import get_current_active_user
 
 product_router = APIRouter(prefix="/product", tags=["Product"])
 
-#################################################################################
-#################################################################################
-#################################################################################
-#################################################################################
-### А-А-А-А-А-А-А-А--А-А-А-А-А-АААААААААА Надо заполнить комменты и не комитить вообще!!!!
-#################################################################################
-#################################################################################
-#################################################################################
 
-
-@product_router.post("/")
+@product_router.post(
+    "/",
+    summary="Новый товар",
+)
 async def create_product(
     product: ProductBase,
     user: UserRead = Depends(get_current_active_user),
@@ -28,9 +22,49 @@ async def create_product(
     return await product_create(product, db)
 
 
-@product_router.get("/")
+@product_router.put(
+    "/{product_id}",
+    summary="Редактировать товар",
+)
+async def update_product(
+    product_id: int,
+    product: ProductBase,
+    user: UserRead = Depends(get_current_active_user),
+    db=Depends(get_db),
+) -> ProductRead:
+    return await product_update(product_id, product, db)
+
+
+@product_router.get(
+    "/{product_id}",
+    summary="Информация о товаре",
+)
+async def retrieve_product(
+    product_id: int,
+    user: UserRead = Depends(get_current_active_user),
+    db=Depends(get_db),
+) -> ProductRead:
+    return await product_read(product_id, db)
+
+
+@product_router.get(
+    "/",
+    summary="Список товаров",
+)
 async def list_product(
     user: UserRead = Depends(get_current_active_user),
     db=Depends(get_db),
-) -> List[ProductRead]:    
+) -> List[ProductRead]:
     return await product_list(db)
+
+
+@product_router.delete(
+    "/{product_id}",
+    summary="Удалить товар",
+)
+async def delete_product(
+    product_id: int,
+    user: UserRead = Depends(get_current_active_user),
+    db=Depends(get_db),
+):
+    return await product_delete(product_id, db)

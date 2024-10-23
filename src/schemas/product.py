@@ -1,12 +1,12 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 from pydantic import BaseModel, PositiveInt
 
 
 class ProductBase(BaseModel):
     name: str
     price: PositiveInt
-    is_active: Optional[bool] = True
+    is_active: Union[bool, None] = None
 
 
 class ProductRead(ProductBase):

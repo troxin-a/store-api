@@ -108,5 +108,3 @@ async def get_access_token(db: AsyncSession, form_data: OAuth2PasswordRequestFor
     access_token_expires = timedelta(minutes=settings.jwt.access_token_expire_minutes)
 
     return create_access_token(data={"sub": user.email}, expires_delta=access_token_expires)
-
-
