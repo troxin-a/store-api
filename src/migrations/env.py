@@ -7,10 +7,10 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
-from models.user import User  # noqa
-from models.cart import Cart  # noqa
-from models.product import Product  # noqa
-from models.cart_product import CartProduct  # noqa
+from models.users import User  # noqa # pylint:disable=unused-import
+from models.cart_product import CartProduct  # noqa # pylint:disable=unused-import
+from models.product import Product  # noqa # pylint:disable=unused-import
+from models.cart import Cart  # noqa # pylint:disable=unused-import
 
 from config.settings import settings
 from config.db import Base
