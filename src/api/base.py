@@ -9,16 +9,11 @@ from services.users import get_access_token
 base_router = APIRouter(prefix="")
 
 
-@base_router.get("/")
-async def index():
-    return {"message": "Started"}
-
-
 @base_router.post(
     "/token",
     summary="Получить токен",
     description="Возвращает bearer токен",
-    tags=["Users"],
+    tags=["User"],
 )
 async def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)

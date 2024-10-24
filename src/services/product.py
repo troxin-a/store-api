@@ -30,7 +30,7 @@ async def get_product_by_id(product_id: int, db: AsyncSession, user: Union[User,
     if not item:
         raise HTTPException(status_code=404, detail="Товар не найден")
     if user and not user.is_admin and not item.is_active:
-        raise HTTPException(status_code=403, detail="Товар неактивен")
+        raise HTTPException(status_code=423, detail="Товар неактивен")
 
     return item
 
