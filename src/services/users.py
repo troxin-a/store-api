@@ -1,7 +1,7 @@
 import jwt
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from config.settings import settings
@@ -49,7 +49,13 @@ def get_password_hash(password: str) -> str:
 
 
 async def get_user(db, username: str):
-    query = select(User).where(User.email == username)
+    query = select(User).where(
+        or_(
+            User.email == username,
+            User.phone == username,
+        )
+    )
+
     result = await db.execute(query)
     user = result.scalars().first()
 
@@ -108,7 +114,7 @@ async def get_access_token(db: AsyncSession, form_data: OAuth2PasswordRequestFor
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Введен неверный email или пароль.",
+            detail="Введен неверный email (телефон) или пароль.",
             headers={"WWW-Authenticate": "Bearer"},
         )
     access_token_expires = timedelta(minutes=settings.jwt.access_token_expire_minutes)
