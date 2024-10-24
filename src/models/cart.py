@@ -11,6 +11,5 @@ class Cart(Base):
     user: Mapped["User"] = relationship(back_populates="cart")
     products: Mapped[List["CartProduct"]] = relationship("CartProduct", back_populates="cart", lazy="joined")
 
-
-# удаление товаров из корзины и полной очистки корзины.
-# Реализовать метод для получения общей стоимости товаров в корзине.
+    def get_total_cost(self):
+        return sum([product.quantity * product.product.price for product in self.products])

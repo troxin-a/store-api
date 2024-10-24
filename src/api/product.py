@@ -3,7 +3,7 @@ from fastapi import Depends
 from fastapi.routing import APIRouter
 from config.db import get_db
 from models.users import User
-from schemas.product import ProductBase, ProductRead
+from schemas.product import ProductBase, ProductRead, ProductPatch
 from services.product import product_create, product_delete, product_list, product_read, product_update
 from services.users import get_current_active_user, is_admin
 
@@ -22,16 +22,16 @@ async def create_product(
     return await product_create(product, db)
 
 
-@product_router.put(
+@product_router.patch(
     "/{product_id}",
     summary="Редактировать товар",
     dependencies=[Depends(is_admin)],
 )
 async def update_product(
     product_id: int,
-    product: ProductBase,
+    product: ProductPatch,
     db=Depends(get_db),
-) -> ProductRead:
+) -> ProductPatch:
     return await product_update(product_id, product, db)
 
 

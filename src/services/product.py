@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 from sqlalchemy import delete, select
@@ -20,16 +20,26 @@ async def product_create(data: ProductBase, db: AsyncSession) -> ProductRead:
     return ProductRead.model_validate(item, from_attributes=True)
 
 
-async def product_update(product_id: int, data: ProductBase, db: AsyncSession) -> ProductRead:
+async def get_product_by_id(product_id: int, db: AsyncSession, user: Union[User, None] = None) -> Product:
     """
-    Обновляет товар по его id.
-    Если товар не существует, возвращает ошибку 404.
+    Возвращает товар по его id.
     """
     query = select(Product).where(Product.id == product_id)
     response = await db.execute(query)
     item = response.scalars().first()
     if not item:
         raise HTTPException(status_code=404, detail="Товар не найден")
+    if user and not user.is_admin and not item.is_active:
+        raise HTTPException(status_code=403, detail="Товар неактивен")
+
+    return item
+
+
+async def product_update(product_id: int, data: ProductBase, db: AsyncSession) -> ProductRead:
+    """
+    Обновляет товар по его id.
+    """
+    item = await get_product_by_id(product_id, db)
 
     for key, value in data.model_dump(exclude_unset=True).items():
         setattr(item, key, value)
@@ -42,15 +52,8 @@ async def product_update(product_id: int, data: ProductBase, db: AsyncSession) -
 async def product_read(user: User, product_id: int, db: AsyncSession) -> ProductRead:
     """
     Возвращает товар по его id.
-    Если товар не существует, возвращает ошибку 404.
     """
-    query = select(Product).where(Product.id == product_id)
-    response = await db.execute(query)
-    item = response.scalars().first()
-    if not item:
-        raise HTTPException(status_code=404, detail="Товар не найден")
-    if not user.is_admin and not item.is_active:
-        raise HTTPException(status_code=403, detail="Товар неактивен")
+    item = await get_product_by_id(product_id, db, user)
 
     return ProductRead.model_validate(item, from_attributes=True)
 
@@ -83,4 +86,5 @@ async def product_delete(product_id: int, db: AsyncSession):
     if deleted_count == 0:
         raise HTTPException(status_code=404, detail="Товар не найден")
 
+    await db.commit()
     return JSONResponse(status_code=200, content={"message": "Товар успешно удалён"})

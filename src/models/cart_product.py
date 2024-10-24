@@ -10,6 +10,6 @@ class CartProduct(Base):
     cart: Mapped["Cart"] = relationship(back_populates="products")
 
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id"), primary_key=True)
-    product: Mapped["Product"] = relationship("Product")
+    product: Mapped["Product"] = relationship("Product", lazy="joined", uselist=False)
 
     quantity: Mapped[int] = mapped_column(default=1)
