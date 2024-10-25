@@ -18,6 +18,7 @@ product_router = APIRouter(prefix="/product", tags=["Product"])
         401: {"description": "Unauthorized"},
         403: {"description": "Forbidden"},
     },
+    status_code=201,
 )
 async def create_product(
     product: ProductBase,

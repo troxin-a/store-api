@@ -13,6 +13,7 @@ users_router = APIRouter(prefix="/users", tags=["User"])
     summary="Регистрация",
     response_description="Пользователь создан",
     response_model=UserRead,
+    status_code=201,
 )
 async def registration(user: CreateUser, db: AsyncSession = Depends(get_db)):
     """
