@@ -1,12 +1,16 @@
-from sqlalchemy import Integer
+import re
 from sqlalchemy.ext.asyncio import AsyncAttrs, async_sessionmaker, create_async_engine
-from sqlalchemy.orm import DeclarativeBase, Mapped, declared_attr, mapped_column
+from sqlalchemy.orm import DeclarativeBase, declared_attr
 
 from config.settings import settings
 
 engine = create_async_engine(settings.db.url)
 
-async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
+async_session_maker = async_sessionmaker(
+    bind=engine,
+    expire_on_commit=False,
+    autoflush=False,
+)
 
 
 class Base(AsyncAttrs, DeclarativeBase):
@@ -14,8 +18,15 @@ class Base(AsyncAttrs, DeclarativeBase):
 
     __abstract__ = True
 
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-
     @declared_attr.directive
+    @classmethod
     def __tablename__(cls) -> str:
-        return cls.__name__.lower() + "s"
+        """Задает имя таблицы в БД."""
+        table_name = cls.__name__ + "s"
+        table_name = re.sub(r"(?<!^)(?=[A-Z])", "_", table_name)
+        return table_name.lower()
+
+
+async def get_db():
+    async with async_session_maker() as db:
+        yield db

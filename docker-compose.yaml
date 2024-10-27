@@ -1,12 +1,4 @@
 services:
-  redis:
-    image: redis
-    restart: on-failure
-    expose:
-      - 6379
-    env_file: 
-      - ".env"
-
   db:
     image: postgres
     restart: on-failure
@@ -26,8 +18,8 @@ services:
   app:
     build: .
     tty: true
-    # command: fastapi run src/main.py --workers 4 --host 0.0.0.0 --port 8000
-    command: fastapi dev src/main.py --host 0.0.0.0 --port 8000
+    command: fastapi run src/main.py --workers 4 --host 0.0.0.0 --port 8000
+    # command: fastapi dev src/main.py --host 0.0.0.0 --port 8000
     volumes:
       - .:/app
     ports:
@@ -38,20 +30,6 @@ services:
       db:
         condition: service_healthy
         restart: true
-
-  # celery:
-  #   build: .
-  #   tty: true
-  #   command: celery -A config worker -B -l INFO
-  #   restart: on-failure
-  #   volumes:
-  #     - .:/app
-  #   depends_on:
-  #     - redis
-  #     - db
-  #     - app
-  #   env_file: 
-  #     - ".env"
 
 volumes:
   pg_data:

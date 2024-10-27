@@ -18,10 +18,19 @@ class DatabaseSettings(BaseSettings):
         )
 
 
+class JWTSettings(BaseSettings):
+    secret_key: str
+    algorithm: str
+    access_token_expire_minutes: int
+
+    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+
+
 class Settings(BaseSettings):
     db: DatabaseSettings = DatabaseSettings()
+    jwt: JWTSettings = JWTSettings(algorithm="HS256", access_token_expire_minutes=30)
 
-    title: str = "My project"
+    title: str = "Store_API"
     version: str = "0.1.0"
 
 
