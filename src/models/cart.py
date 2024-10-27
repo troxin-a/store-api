@@ -6,7 +6,7 @@ from config.db import Base
 
 class Cart(Base):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
-    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
 
     user: Mapped["User"] = relationship(back_populates="cart")
     products: Mapped[List["CartProduct"]] = relationship("CartProduct", back_populates="cart", lazy="joined")

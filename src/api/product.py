@@ -5,13 +5,13 @@ from config.db import get_db
 from models.users import User
 from schemas.product import ProductBase, ProductRead, ProductPatch
 from services.product import product_create, product_delete, product_list, product_read, product_update
-from services.users import get_current_active_user, is_admin
+from services.users import get_current_user_or_none, is_admin
 
 product_router = APIRouter(prefix="/product", tags=["Product"])
 
 
 @product_router.post(
-    "/",
+    "",
     summary="Новый товар",
     dependencies=[Depends(is_admin)],
     responses={
@@ -78,7 +78,7 @@ async def update_product(
 )
 async def retrieve_product(
     product_id: int,
-    user: User = Depends(get_current_active_user),
+    user: User = Depends(get_current_user_or_none),
     db=Depends(get_db),
 ) -> ProductRead:
     """
@@ -89,22 +89,27 @@ async def retrieve_product(
     - **id**: Уникальный идентификатор
     - **created_at**: Дата и время добавления
     - **updated_at**: Дата и время последнего изменения
+
+    **Авторизация - не обязательна.**
     """
     return await product_read(user, product_id, db)
 
 
 @product_router.get(
-    "/",
+    "",
     summary="Список товаров",
     responses={401: {"description": "Unauthorized"}},
 )
 async def list_product(
-    user: User = Depends(get_current_active_user),
+    user: User = Depends(get_current_user_or_none),
     db=Depends(get_db),
 ) -> List[ProductRead]:
     """
     Возвращает список активных товаров.
+
     Если пользователь админ, возвращает все товары (см. Информация о товаре)
+
+    **Авторизация - не обязательна.**
     """
     return await product_list(user, db)
 

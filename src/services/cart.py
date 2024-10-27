@@ -109,11 +109,13 @@ async def delete_all_cart_products(user: User, db: AsyncSession) -> CartChange:
     stmt = delete(CartProduct).where(CartProduct.cart_id == user.cart.id)
     await db.execute(stmt)
     await db.commit()
-    return CartChange(
-        message="Корзина очищена",
-        cart=[],
-        total_cost=0,
-    )
+    await db.refresh(user)
+
+    cart = await get_cart(user)
+    cart = cart.model_dump()
+    cart["message"] = "Корзина очищена"
+
+    return CartChange(**cart)
 
 
 async def add_quantity_cart_product(product_id: int, user: User, db: AsyncSession):

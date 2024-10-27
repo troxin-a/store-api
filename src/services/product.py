@@ -29,7 +29,7 @@ async def get_product_by_id(product_id: int, db: AsyncSession, user: Union[User,
     item = response.scalars().first()
     if not item:
         raise HTTPException(status_code=404, detail="Товар не найден")
-    if user and not user.is_admin and not item.is_active:
+    if (not user or (user and not user.is_admin)) and not item.is_active:
         raise HTTPException(status_code=423, detail="Товар неактивен")
 
     return item
@@ -65,7 +65,7 @@ async def product_list(user: User, db: AsyncSession) -> List[ProductRead]:
     """
     query = select(Product).order_by(Product.created_at.desc())
 
-    if not user.is_admin:
+    if (user and not user.is_admin) or not user:
         query = query.where(Product.is_active)
 
     response = await db.execute(query)

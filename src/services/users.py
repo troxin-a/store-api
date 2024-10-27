@@ -16,6 +16,7 @@ from services.cart import create_cart
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
 
 
 async def create_user(user: CreateUser, db: AsyncSession, is_admin=False):
@@ -100,6 +101,23 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     user = await get_user(db, username=token_data.username)
     if user is None:
         raise credentials_exception
+    return user
+
+
+async def get_current_user_or_none(
+    token: str | None = Depends(oauth2_scheme_optional), db: AsyncSession = Depends(get_db)
+):
+    try:
+        payload = jwt.decode(token, key=settings.jwt.secret_key, algorithms=[settings.jwt.algorithm])
+        username: str = payload.get("sub")
+        if username is None:
+            return None
+        token_data = TokenData(username=username)
+    except jwt.InvalidTokenError:
+        return None
+    user = await get_user(db, username=token_data.username)
+    if user is None:
+        return None
     return user
 
 

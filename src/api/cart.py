@@ -18,7 +18,7 @@ cart_router = APIRouter(prefix="/cart", tags=["Cart"])
 
 
 @cart_router.post(
-    "/",
+    "",
     summary="Добавить товар в корзину",
     responses={
         401: {"description": "Unauthorized"},
@@ -113,7 +113,7 @@ async def delete_product_from_cart(
 
 
 @cart_router.delete(
-    "/",
+    "",
     summary="Очистить корзину",
     responses={
         401: {"description": "Unauthorized"},
@@ -127,7 +127,7 @@ async def clear_cart(
 
 
 @cart_router.get(
-    "/",
+    "",
     summary="Список товаров в корзине",
     responses={
         401: {"description": "Unauthorized"},

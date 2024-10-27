@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from config.db import Base, get_db
 from config.settings import settings
 from main import app
+from models.product import Product
 from schemas.users import CreateUser
 from services.users import create_user, get_access_token
 
@@ -28,10 +29,19 @@ app.dependency_overrides[get_db] = get_test_db
 client = TestClient(app)
 
 
+products = [
+    {"id": 101, "name": "test1", "price": 30, "is_active": True},
+    {"id": 102, "name": "test2", "price": 25, "is_active": False},
+    {"id": 103, "name": "test3", "price": 35, "is_active": True},
+    {"id": 104, "name": "test4", "price": 10, "is_active": True},
+]
+
+
 @pytest.fixture(autouse=True, scope="session")
 async def prepare_database():
     async with engine_test.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
+        await connection.execute(Product.__table__.insert(), products)
     yield
     async with engine_test.begin() as connection:
         await connection.run_sync(Base.metadata.drop_all)
