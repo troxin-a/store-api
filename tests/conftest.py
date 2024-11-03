@@ -5,14 +5,13 @@ from httpx import ASGITransport, AsyncClient
 import pytest
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from config.db import Base, get_db
-from config.settings import settings
 from main import app
 from models.product import Product
 from schemas.users import CreateUser
 from services.users import create_user, get_access_token
 
 
-engine_test = create_async_engine(f"{settings.db.url}_test")
+engine_test = create_async_engine("sqlite+aiosqlite:///:memory:")
 async_test_session_maker = async_sessionmaker(
     bind=engine_test,
     expire_on_commit=False,
