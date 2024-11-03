@@ -63,7 +63,7 @@ async def product_list(user: User, db: AsyncSession) -> List[ProductRead]:
     Возвращает список активных товаров.
     Если пользователь админ, возвращает все товары.
     """
-    query = select(Product).order_by(Product.created_at.desc())
+    query = select(Product).order_by(Product.id.desc())
 
     if (user and not user.is_admin) or not user:
         query = query.where(Product.is_active)

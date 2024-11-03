@@ -29,21 +29,21 @@ async def test_add_product_to_cart(user_token, ac: AsyncClient):
                 },
             },
             {
-                "quantity": 1,
-                "product": {
-                    "id": 104,
-                    "is_active": True,
-                    "name": "test4",
-                    "price": 10,
-                },
-            },
-            {
                 "quantity": 2,
                 "product": {
                     "id": 103,
                     "is_active": True,
                     "name": "test3",
                     "price": 35,
+                },
+            },
+            {
+                "quantity": 1,
+                "product": {
+                    "id": 104,
+                    "is_active": True,
+                    "name": "test4",
+                    "price": 10,
                 },
             },
         ],

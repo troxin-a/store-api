@@ -4,16 +4,16 @@ import pytest
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_list_product(ac: AsyncClient):
-    """Попытка получения списка товаров"""
+    """Получение списка товаров"""
     response = await ac.get("/product")
-    assert response.status_code == 200
+    assert response.status_code == 401
 
 
 @pytest.mark.asyncio(loop_scope="session")
 async def test_read_product(ac: AsyncClient):
-    """Попытка чтения товара"""
+    """Чтение товара"""
     response = await ac.get("/product/103")
-    assert response.status_code == 200
+    assert response.status_code == 401
 
 
 @pytest.mark.asyncio(loop_scope="session")
