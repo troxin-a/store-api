@@ -17,7 +17,6 @@ Backend-часть удобного и безопасного сервиса, к
 FastAPI-project
 ├── src/
 │   ├── api
-│   │   ├── base.py
 │   │   ├── cart.py
 │   │   ├── product.py
 │   │   └── user.py
