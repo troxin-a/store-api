@@ -71,7 +71,7 @@ async def admin_token():
     return token
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(autouse=True, scope="session")
 async def user_token():
     user = CreateUser(
         email="user1@user.ru",

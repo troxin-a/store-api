@@ -1,22 +1,46 @@
+from typing import Optional
+from datetime import datetime, timedelta, timezone
+
 import jwt
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi import Depends, HTTPException, status, Request
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security.utils import get_authorization_scheme_param
 from sqlalchemy import or_, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
-from config.settings import settings
-from models.users import User
-from schemas.users import CreateUser, UserRead, TokenData
-from datetime import datetime, timedelta, timezone
-from config.db import get_db
 from passlib.context import CryptContext
 
+from config.settings import settings
+from models.users import User
+from schemas.users import CreateUser, UserRead, TokenData, LoginSchema
+from config.db import get_db
 from services.cart import create_cart
 
 
+class SecurityBearer(HTTPBearer):
+    async def __call__(self, request: Request) -> Optional[HTTPAuthorizationCredentials]:
+        authorization = request.headers.get("Authorization")
+        scheme, credentials = get_authorization_scheme_param(authorization)
+        if not (authorization and scheme and credentials):
+            if self.auto_error:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated"
+                )
+            else:
+                return None
+        if scheme.lower() != "bearer":
+            if self.auto_error:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Invalid authentication credentials",
+                )
+            else:
+                return None
+        return HTTPAuthorizationCredentials(scheme=scheme, credentials=credentials)
+
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
+security = SecurityBearer(scheme_name="Token", description="")
 
 
 async def create_user(user: CreateUser, db: AsyncSession, is_admin=False):
@@ -84,12 +108,14 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession = Depends(get_db)):
+async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security),
+                           db: AsyncSession = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+    token = credentials.credentials
     try:
         payload = jwt.decode(token, key=settings.jwt.secret_key, algorithms=[settings.jwt.algorithm])
         username: str = payload.get("sub")
@@ -104,31 +130,14 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: AsyncSession
     return user
 
 
-async def get_current_user_or_none(
-    token: str | None = Depends(oauth2_scheme_optional), db: AsyncSession = Depends(get_db)
-):
-    try:
-        payload = jwt.decode(token, key=settings.jwt.secret_key, algorithms=[settings.jwt.algorithm])
-        username: str = payload.get("sub")
-        if username is None:
-            return None
-        token_data = TokenData(username=username)
-    except jwt.InvalidTokenError:
-        return None
-    user = await get_user(db, username=token_data.username)
-    if user is None:
-        return None
-    return user
-
-
 async def get_current_active_user(current_user: User = Depends(get_current_user)):
     if not current_user.is_active:
         raise HTTPException(status_code=400, detail="Пользователь неактивен")
     return current_user
 
 
-async def get_access_token(db: AsyncSession, form_data: OAuth2PasswordRequestForm):
-    user = await authenticate_user(db, form_data.username, form_data.password)
+async def get_access_token(db: AsyncSession, data: LoginSchema):
+    user = await authenticate_user(db, data.username, data.password)
     if not user:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

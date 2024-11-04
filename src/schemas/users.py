@@ -1,21 +1,17 @@
 import re
+from typing import Annotated
 from typing_extensions import Self
-from pydantic import BaseModel, ConfigDict, EmailStr, field_validator, model_validator
+from pydantic import BaseModel, Field, ConfigDict, EmailStr, field_validator, model_validator
+
+
+PhoneStr = Annotated[str, Field(..., pattern=r"^\+7\d{10}$")]
 
 
 class UserBase(BaseModel):
     first_name: str
     last_name: str
     email: EmailStr
-    phone: str
-
-    @field_validator("phone")
-    @classmethod
-    def validate_phone(cls, v):
-        pattern = r"^\+7\d{10}$"
-        if not re.match(pattern, v):
-            raise ValueError("Телефон должен начинаться с +7 и содержать 10 цифр.")
-        return v
+    phone: PhoneStr
 
 
 class CreateUser(UserBase):
@@ -55,9 +51,25 @@ class ListUser(UserBase):
     is_admin: bool
 
 
+class LoginSchema(BaseModel):
+    username: EmailStr | PhoneStr
+    password: str
+
+
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+    model_config = {
+        'json_schema_extra': {
+            'examples': [
+                {
+                    'access_token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9....',
+                    'token_type': 'bearer',
+                },
+            ],
+        }
+    }
 
 
 class TokenData(BaseModel):
