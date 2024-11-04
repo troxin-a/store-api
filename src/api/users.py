@@ -30,6 +30,7 @@ async def registration(user: CreateUser, db: AsyncSession = Depends(get_db)):
     """
     return await create_user(user, db)
 
+
 @users_router.post(
     "/login",
     summary="Получить токен",
