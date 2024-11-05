@@ -61,11 +61,11 @@ class Token(BaseModel):
     token_type: str
 
     model_config = {
-        'json_schema_extra': {
-            'examples': [
+        "json_schema_extra": {
+            "examples": [
                 {
-                    'access_token': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9....',
-                    'token_type': 'bearer',
+                    "access_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9....",
+                    "token_type": "bearer",
                 },
             ],
         }

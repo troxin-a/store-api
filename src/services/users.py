@@ -24,7 +24,8 @@ class SecurityBearer(HTTPBearer):
         if not (authorization and scheme and credentials):
             if self.auto_error:
                 raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated"
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail={"code": 401, "message": "Unauthorized"},
                 )
             else:
                 return None
@@ -108,8 +109,9 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 
-async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security),
-                           db: AsyncSession = Depends(get_db)):
+async def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security), db: AsyncSession = Depends(get_db)
+):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
