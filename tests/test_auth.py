@@ -58,10 +58,10 @@ async def test_registration(ac: AsyncClient):
 @pytest.mark.asyncio(loop_scope="session")
 async def test_authentication(ac: AsyncClient):
     queries = [
-        ac.post("/token", json={"username": "test@wrong.ru", "password": "test"}),
-        ac.post("/token", json={"username": "test@test.ru", "password": "test"}),
-        ac.post("/token", json={"username": "user1@user.ru", "password": "Qwerty12345!"}),
-        ac.post("/token", json={"username": "+77777777777", "password": "Qwerty12345!"}),
+        ac.post("/users/login", json={"username": "test@wrong.ru", "password": "test"}),
+        ac.post("/users/login", json={"username": "test@test.ru", "password": "test"}),
+        ac.post("/users/login", json={"username": "user1@user.ru", "password": "Qwerty12345!"}),
+        ac.post("/users/login", json={"username": "+77777777777", "password": "Qwerty12345!"}),
     ]
 
     def codes():
